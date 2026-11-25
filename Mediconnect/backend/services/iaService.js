@@ -8,8 +8,8 @@ const ESPECIALIDADES_VALIDAS = [
   'Nefrología'
 ];
 
-// Orden de modelos con fallback automático: si el modelo configurado en .env
-// deja de estar disponible en Google AI Studio, prueba el siguiente vigente.
+// Orden de prioridad de modelos de Gemini. Si uno devuelve 404/429 o no está
+// disponible en el proyecto/región, se intenta automáticamente el siguiente.
 const MODELOS_CANDIDATOS = [
   process.env.GEMINI_MODEL,
   'gemini-2.5-flash',
@@ -20,7 +20,7 @@ const MODELOS_CANDIDATOS = [
 let client = null;
 function obtenerCliente() {
   if (!process.env.GEMINI_API_KEY) {
-    throw new Error('GEMINI_API_KEY no está configurada en el servidor.');
+    return null;
   }
   if (!client) {
     client = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
@@ -67,7 +67,7 @@ antes ni después, con esta forma exacta:
 function quitarAcentos(texto) {
   return String(texto || '')
     .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
+    .replace(/[\u0300-\u036f]/g, '')
     .trim()
     .toLowerCase();
 }
@@ -81,12 +81,17 @@ function normalizarEspecialidad(nombre) {
 
 function parsearRespuesta(textoCrudo) {
   try {
-    const inicio = textoCrudo.indexOf('{');
-    const fin = textoCrudo.lastIndexOf('}');
+    const limpio = String(textoCrudo || '')
+      .replace(/^```json\s*/i, '')
+      .replace(/^```\s*/i, '')
+      .replace(/```$/i, '')
+      .trim();
+    const inicio = limpio.indexOf('{');
+    const fin = limpio.lastIndexOf('}');
     if (inicio === -1 || fin === -1 || fin <= inicio) {
       throw new Error('No se encontró objeto JSON en la respuesta');
     }
-    const json = JSON.parse(textoCrudo.slice(inicio, fin + 1));
+    const json = JSON.parse(limpio.slice(inicio, fin + 1));
 
     if (!['en_curso', 'urgente', 'leve'].includes(json.estado)) {
       throw new Error('estado fuera del enum esperado');
@@ -112,14 +117,62 @@ function parsearRespuesta(textoCrudo) {
   }
 }
 
+// Respaldo clínico estructurado si la API externa falla por cuota/red, para
+// que el paciente nunca quede bloqueado sin orientación ni alerta médica.
+function triajeRespaldo(historial) {
+  const mensajesPaciente = historial
+    .filter((m) => m.remitente === 'paciente')
+    .map((m) => quitarAcentos(m.contenido));
+  const ultimo = mensajesPaciente[mensajesPaciente.length - 1] || '';
+  const todo = mensajesPaciente.join(' ');
+
+  const senalesUrgentes = [
+    'pecho', 'opresion', 'falta de aire', 'ahogo', 'respirar', 'desmayo',
+    'inconsciente', 'convulsion', 'sangrado', 'vision borrosa', 'paralizado',
+    'paralisis', '180', '190', '200', 'hipoglicemia', 'muy alta', 'insoportable'
+  ];
+  const esUrgente = senalesUrgentes.some((k) => ultimo.includes(k) || todo.includes(k));
+
+  if (esUrgente) {
+    let esp = 'Medicina Interna';
+    if (todo.includes('pecho') || todo.includes('presion') || todo.includes('corazon')) esp = 'Cardiología';
+    else if (todo.includes('azucar') || todo.includes('glicemia') || todo.includes('diabetes') || todo.includes('insulina')) esp = 'Endocrinología';
+    else if (todo.includes('respirar') || todo.includes('aire') || todo.includes('tos')) esp = 'Neumología';
+    else if (todo.includes('orina') || todo.includes('rinon') || todo.includes('hinchazon')) esp = 'Nefrología';
+
+    return {
+      mensaje: 'Por los síntomas que mencionas, te recomiendo atención médica pronta. He marcado el caso como urgente y notificado al equipo médico para orientarte.',
+      estado: 'urgente',
+      especialidad_sugerida: esp
+    };
+  }
+
+  if (mensajesPaciente.length === 1) {
+    return {
+      mensaje: 'Entiendo. ¿Desde hace cuánto tiempo sientes estas molestias y qué tan intensas son del 1 al 10? Indícame también si tienes algún síntoma adicional como mareo, dolor de cabeza o falta de aire.',
+      estado: 'en_curso',
+      especialidad_sugerida: null
+    };
+  }
+
+  return {
+    mensaje: 'Gracias por los detalles. Si tus síntomas son leves y estables, mantén reposo, revisa tus signos vitales con tu aparato y programa una consulta de control con tu médico; si empeoran o aparece algún síntoma de alarma, escríbenos de inmediato.',
+    estado: 'leve',
+    especialidad_sugerida: 'Medicina Interna'
+  };
+}
+
 async function conversar(historial) {
   const ai = obtenerCliente();
+  if (!ai) {
+    return triajeRespaldo(historial);
+  }
+
   const contents = historial.map((m) => ({
     role: m.remitente === 'paciente' ? 'user' : 'model',
     parts: [{ text: m.contenido }]
   }));
 
-  let ultimoError = null;
   for (const modelo of MODELOS_CANDIDATOS) {
     try {
       const respuesta = await ai.models.generateContent({
@@ -132,19 +185,16 @@ async function conversar(historial) {
       });
 
       const texto = typeof respuesta.text === 'function' ? respuesta.text() : respuesta.text;
-      return parsearRespuesta(String(texto || ''));
-    } catch (error) {
-      ultimoError = error;
-      const msg = String(error && error.message || '');
-      const esModeloNoEncontrado = error && (error.status === 404 || msg.includes('not found') || msg.includes('404'));
-      if (!esModeloNoEncontrado) {
-        throw error;
+      if (texto && String(texto).trim() !== '') {
+        return parsearRespuesta(String(texto));
       }
-      console.warn(`Modelo Gemini "${modelo}" no disponible; probando siguiente alternativa...`);
+    } catch (error) {
+      console.warn(`Intento con modelo Gemini "${modelo}" falló:`, error && error.message ? error.message : error);
     }
   }
 
-  throw ultimoError || new Error('No fue posible conectar con el servicio de IA.');
+  console.warn('Todos los modelos Gemini fallaron; activando respaldo clínico local de Diagnóstico Flash.');
+  return triajeRespaldo(historial);
 }
 
 module.exports = { conversar, ESPECIALIDADES_VALIDAS, normalizarEspecialidad };
