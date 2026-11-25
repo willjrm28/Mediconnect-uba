@@ -1,0 +1,988 @@
+/* ============================================================
+   MediConnect — hoja de estilos compartida (móvil-first)
+   Una sola hoja para login, app de paciente y panel de médico.
+   ============================================================ */
+
+:root {
+  /* Paleta principal — azul (antes verde, cambiado 2026-07-20, ver
+     Registro de avance en CLAUDE.md). Se mantienen los mismos NOMBRES
+     de variable donde tenía sentido (--rojo, --ambar) porque son
+     semánticos (error, advertencia); las que eran literalmente
+     "verde" se renombraron a "azul" para que el nombre no mienta
+     sobre el color. */
+  --azul: #1565c0;
+  --azul-oscuro: #0d47a1;
+  --azul-claro: #e3f0fc;
+  --morado: #6d4aa8;
+  --morado-claro: #f1ecf9;
+  --rojo: #c0392b;
+  --rojo-claro: #fdecea;
+  --ambar: #b7791f;
+  --ambar-claro: #fdf3e0;
+  --gris-900: #1b2530;
+  --gris-600: #56677a;
+  --gris-300: #ccd6e0;
+  --gris-100: #f1f4f8;
+  --blanco: #ffffff;
+  --sombra: 0 2px 10px rgba(27, 37, 48, 0.10);
+  --radio: 12px;
+  --fuente: "Segoe UI", Roboto, system-ui, -apple-system, sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  font-family: var(--fuente);
+  background: var(--gris-100);
+  color: var(--gris-900);
+  min-height: 100%;
+  font-size: 16px;
+}
+
+h1, h2, h3 { line-height: 1.25; }
+h1 { font-size: 1.45rem; }
+h2 { font-size: 1.15rem; }
+h3 { font-size: 1rem; }
+
+a { color: var(--azul); }
+
+/* ---------- Utilidades ---------- */
+.oculto { display: none !important; }
+.texto-suave { color: var(--gris-600); font-size: 0.87rem; }
+.texto-centrado { text-align: center; }
+.mt-1 { margin-top: 8px; } .mt-2 { margin-top: 16px; } .mt-3 { margin-top: 24px; }
+.fila { display: flex; gap: 10px; align-items: center; }
+.fila-separada { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.crece { flex: 1; }
+
+/* ---------- Tarjetas ---------- */
+.tarjeta {
+  background: var(--blanco);
+  border-radius: var(--radio);
+  box-shadow: var(--sombra);
+  padding: 16px;
+}
+.tarjeta + .tarjeta { margin-top: 12px; }
+
+/* ---------- Botones ---------- */
+.boton {
+  display: inline-block;
+  border: none;
+  border-radius: 10px;
+  padding: 12px 18px;
+  font-size: 1rem;
+  font-weight: 600;
+  font-family: var(--fuente);
+  cursor: pointer;
+  background: var(--azul);
+  color: var(--blanco);
+  transition: background 0.15s;
+  text-decoration: none;
+  text-align: center;
+}
+.boton:hover { background: var(--azul-oscuro); }
+.boton:disabled { background: var(--gris-300); cursor: not-allowed; }
+.boton-bloque { display: block; width: 100%; }
+.boton-secundario { background: var(--blanco); color: var(--azul); border: 2px solid var(--azul); }
+.boton-secundario:hover { background: var(--azul-claro); }
+.boton-peligro { background: var(--rojo); }
+.boton-peligro:hover { background: #922b21; }
+.boton-chico { padding: 7px 12px; font-size: 0.85rem; border-radius: 8px; }
+
+/* ---------- Formularios ---------- */
+.campo { margin-bottom: 14px; }
+.campo label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--gris-600);
+  margin-bottom: 5px;
+}
+.campo input, .campo select, .campo textarea {
+  width: 100%;
+  padding: 11px 12px;
+  border: 1.5px solid var(--gris-300);
+  border-radius: 10px;
+  font-size: 1rem;
+  font-family: var(--fuente);
+  background: var(--blanco);
+  color: var(--gris-900);
+}
+.campo input:focus, .campo select:focus, .campo textarea:focus {
+  outline: none;
+  border-color: var(--azul);
+}
+.campos-dobles { display: grid; grid-template-columns: 1fr 1fr; gap: 0 12px; }
+
+/* ---------- Mensajes de estado ---------- */
+.aviso {
+  border-radius: 10px;
+  padding: 11px 14px;
+  font-size: 0.9rem;
+  margin-bottom: 12px;
+}
+.aviso-error { background: var(--rojo-claro); color: var(--rojo); }
+.aviso-exito { background: var(--azul-claro); color: var(--azul-oscuro); }
+.aviso-info { background: var(--ambar-claro); color: var(--ambar); }
+
+/* ---------- Chips / etiquetas ---------- */
+.chip {
+  display: inline-block;
+  border-radius: 999px;
+  padding: 3px 11px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  background: var(--gris-100);
+  color: var(--gris-600);
+  white-space: nowrap;
+}
+.chip-verde { background: var(--azul-claro); color: var(--azul-oscuro); }
+.chip-rojo { background: var(--rojo-claro); color: var(--rojo); }
+.chip-ambar { background: var(--ambar-claro); color: var(--ambar); }
+.chip-morado { background: var(--morado-claro); color: var(--morado); }
+
+/* ---------- Tarjeta de alerta (rediseñada 2026-07-20 siguiendo el
+   mockup real de Claude Design — antes era un .item-lista genérico
+   con chips en línea). Barra de color a la izquierda + tipo de
+   alerta como texto en negrita coloreado (no chip) + badge de
+   prioridad arriba a la derecha + pie con fecha y botón de resolver.
+   Nota de consistencia: el mockup usa un verde (#1e8e5a) para el
+   check de "Resuelta"; aquí se usa var(--azul-oscuro) en su lugar,
+   porque el 2026-07-20 se decidió deliberadamente sacar el verde de
+   toda la interfaz (queda solo en el isologotipo) — usar el verde del
+   mockup ahí habría contradicho esa decisión ya documentada. */
+.tarjeta-alerta {
+  background: var(--blanco);
+  border: 1px solid var(--gris-300);
+  border-radius: var(--radio);
+  box-shadow: 0 1px 3px rgba(27, 37, 48, 0.06);
+  padding: 20px;
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+.tarjeta-alerta + .tarjeta-alerta { margin-top: 14px; }
+.tarjeta-alerta .barra-prioridad {
+  width: 4px;
+  align-self: stretch;
+  border-radius: 99px;
+  flex-shrink: 0;
+  margin: 2px 0;
+}
+.tarjeta-alerta .cuerpo { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+.tarjeta-alerta .cabecera { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.tarjeta-alerta .paciente-nombre { font-size: 0.97rem; font-weight: 700; }
+.tarjeta-alerta .paciente-meta { font-size: 0.78rem; color: var(--gris-600); }
+.tarjeta-alerta .badge-prioridad {
+  margin-left: auto;
+  flex-shrink: 0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  padding: 3px 10px;
+  border-radius: 999px;
+}
+.tarjeta-alerta .tipo-alerta { font-size: 0.875rem; font-weight: 700; }
+.tarjeta-alerta .descripcion-alerta { font-size: 0.84rem; line-height: 1.55; color: var(--gris-600); margin: 0; }
+.tarjeta-alerta .pie { display: flex; align-items: center; gap: 14px; margin-top: 4px; flex-wrap: wrap; }
+.tarjeta-alerta .fecha-alerta { display: flex; align-items: center; gap: 6px; font-size: 0.78rem; color: var(--gris-600); }
+.tarjeta-alerta .acciones-alerta { margin-left: auto; display: flex; gap: 8px; }
+.tarjeta-alerta .resuelta-texto {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 0.82rem; font-weight: 700; color: var(--azul-oscuro); padding: 8px 4px;
+}
+.tarjeta-vacia {
+  background: var(--blanco);
+  border: 1px solid var(--gris-300);
+  border-radius: var(--radio);
+  padding: 40px;
+  text-align: center;
+  color: var(--gris-600);
+  font-size: 0.875rem;
+}
+
+/* ---------- Pantalla de acceso (login / registro) ----------
+   Fondo con manchas de color suaves (radial-gradient puro, sin
+   imágenes) para que no se vea plano — pedido de William
+   2026-07-20. Los tonos son el azul y el morado que ya existen en
+   la paleta, a baja opacidad, así que no compite con la tarjeta
+   blanca del centro. */
+.pantalla-acceso {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 24px 16px;
+  background:
+    radial-gradient(circle at 12% 15%, rgba(21, 101, 192, 0.16) 0%, transparent 42%),
+    radial-gradient(circle at 88% 12%, rgba(109, 74, 168, 0.14) 0%, transparent 38%),
+    radial-gradient(circle at 82% 88%, rgba(21, 101, 192, 0.13) 0%, transparent 42%),
+    radial-gradient(circle at 8% 90%, rgba(109, 74, 168, 0.10) 0%, transparent 38%),
+    var(--gris-100);
+}
+.caja-acceso { width: 100%; max-width: 430px; }
+.logo-acceso { text-align: center; color: var(--gris-900); margin-bottom: 18px; }
+.logo-acceso .logo-completo { max-width: 260px; width: 100%; height: auto; }
+.logo-acceso p { color: var(--gris-600); font-size: 0.9rem; margin-top: 8px; }
+/* Ícono de marca — ahora usa el logo real (frontend/img/logo-icono.png),
+   recortado del isologotipo del paper. Se mantiene la caja/bordes por
+   si en algún punto se reemplaza el archivo. */
+.icono-marca {
+  width: 40px; height: 40px;
+  border-radius: 11px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.selector-rol {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  background: var(--gris-100);
+  border-radius: 10px;
+  padding: 4px;
+  margin-bottom: 16px;
+}
+.selector-rol button {
+  border: none;
+  background: transparent;
+  padding: 10px;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  font-family: var(--fuente);
+  color: var(--gris-600);
+  cursor: pointer;
+}
+.selector-rol button.activo { background: var(--blanco); color: var(--azul); box-shadow: var(--sombra); }
+
+/* ---------- Estructura de la app (paciente) ----------
+   Reescrito 2026-07-20 para seguir la arquitectura real del mockup de
+   Claude Design ("App Paciente.dc.html"): una columna flex de altura
+   100vh donde SOLO <main class="contenido"> hace scroll interno —
+   header y barra inferior quedan fijos como hermanos flex, no como
+   posicionamiento fixed/sticky suelto (que era como estaba antes).
+   Esto es más fiel al mockup Y es lo que permite, más abajo, encajar
+   la app dentro de una "tarjeta" de ancho de teléfono en pantallas de
+   escritorio (el mockup se diseñó como una vista de 390×844, no a
+   ancho completo) sin tener que duplicar el CSS. En un celular real
+   (pantalla angosta) esta misma regla ya se ve exactamente igual que
+   antes: a pantalla completa. */
+.app-paciente {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 90% 8%, rgba(21, 101, 192, 0.10) 0%, transparent 38%),
+    radial-gradient(circle at 5% 60%, rgba(109, 74, 168, 0.08) 0%, transparent 36%),
+    var(--gris-100);
+}
+
+.barra-superior {
+  flex: none;
+  background: linear-gradient(135deg, var(--azul) 0%, var(--azul-oscuro) 130%);
+  color: var(--blanco);
+  padding: 14px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.barra-superior h1 { font-size: 1.15rem; line-height: 1.15; }
+.barra-superior .boton-salir {
+  background: rgba(255,255,255,0.16);
+  color: var(--blanco);
+  border: none;
+  border-radius: 8px;
+  padding: 7px 11px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: var(--fuente);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.avatar-perfil-topbar {
+  width: 38px; height: 38px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.18);
+  border: 1px solid rgba(255,255,255,0.35);
+  color: var(--blanco);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.72rem; font-weight: 800;
+  flex-shrink: 0;
+}
+.textos-topbar { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.etiqueta-topbar {
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.75);
+}
+
+.cuerpo-paciente { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+.riel-paciente { display: none; } /* solo aparece en escritorio, ver media query más abajo */
+
+.contenido {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 16px;
+  max-width: 760px;
+  width: 100%;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+.nav-inferior {
+  flex: none;
+  background: var(--blanco);
+  border-top: 1px solid var(--gris-300);
+  display: flex;
+}
+.nav-inferior button {
+  flex: 1;
+  border: none;
+  background: transparent;
+  padding: 9px 2px 10px;
+  font-size: 0.62rem;
+  font-weight: 700;
+  font-family: var(--fuente);
+  color: var(--gris-600);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  position: relative;
+}
+.nav-inferior button .icono { font-size: 1.25rem; line-height: 1; }
+.nav-inferior button.activo { color: var(--azul); }
+.nav-inferior .punto-alerta {
+  position: absolute;
+  top: 4px; right: 22%;
+  width: 9px; height: 9px;
+  border-radius: 50%;
+  background: var(--rojo);
+}
+
+/* ---------- App de paciente en escritorio ----------
+   Primero se probó enmarcarla como una tarjeta de ancho de teléfono
+   centrada (así se diseñó el mockup de Claude Design, una vista de
+   390×844) — pero William pidió después que, igual que el panel
+   médico, la app de paciente tuviera TAMBIÉN una vista de escritorio
+   real, no solo el teléfono enmarcado. No existe un mockup de Claude
+   Design para esta vista (nunca se pidió), así que el layout es
+   propio: header a todo el ancho (igual que en teléfono), un cuerpo
+   de dos columnas (contenido + un riel lateral que reutiliza los
+   mismos componentes ya construidos para el médico: saludo con
+   avatar, resumen de citas/medicamentos, próximas citas), y la barra
+   inferior se vuelve una barra horizontal centrada en vez de pestañas
+   angostas. Por debajo de 560px (celular real) nada de esto aplica:
+   sigue siendo exactamente la vista de teléfono de siempre. */
+@media (min-width: 560px) {
+  .app-paciente {
+    width: auto;
+    max-width: none;
+    margin: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
+  .cuerpo-paciente {
+    flex-direction: row;
+    gap: 20px;
+    align-items: flex-start;
+    padding: 24px;
+    max-width: 1200px;
+    width: 100%;
+    margin: 0 auto;
+    box-sizing: border-box;
+  }
+  .contenido { max-width: none; margin: 0; padding: 0; overflow-y: visible; }
+  .riel-paciente { display: flex; width: 300px; flex-shrink: 0; flex-direction: column; gap: 14px; }
+  .nav-inferior { justify-content: center; gap: 6px; }
+  .nav-inferior button {
+    flex: none;
+    flex-direction: row;
+    gap: 8px;
+    padding: 12px 22px;
+    font-size: 0.85rem;
+  }
+}
+
+/* ---------- Estructura del panel médico (escritorio) ----------
+   Rediseñado 2026-07-20 a tema claro, siguiendo el mockup de Claude
+   Design ya aprobado (antes era una barra lateral oscura --gris-900,
+   antes de tener la marca azul). Ver Registro de avance en CLAUDE.md. */
+.app-medico { display: flex; min-height: 100vh; }
+.lateral-medico {
+  width: 225px;
+  background: var(--blanco);
+  color: var(--gris-900);
+  border-right: 1px solid var(--gris-300);
+  padding: 18px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex-shrink: 0;
+}
+.lateral-medico .marca {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 8px 18px;
+}
+.lateral-medico .marca .icono-marca { width: 34px; height: 34px; border-radius: 9px; }
+.lateral-medico .marca .marca-textos { line-height: 1.2; }
+.lateral-medico .marca .marca-nombre { font-size: 1.05rem; font-weight: 800; }
+.lateral-medico .marca .marca-subtitulo { font-size: 0.72rem; color: var(--gris-600); font-weight: 600; }
+.lateral-medico button.nav-item {
+  border: none;
+  background: transparent;
+  color: var(--gris-600);
+  text-align: left;
+  padding: 11px 12px;
+  border-radius: 9px;
+  font-size: 0.93rem;
+  font-weight: 600;
+  font-family: var(--fuente);
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.lateral-medico button.nav-item:hover { background: var(--gris-100); }
+.lateral-medico button.nav-item.activo { background: var(--azul-claro); color: var(--azul-oscuro); }
+.lateral-medico .abajo { margin-top: auto; }
+.badge {
+  background: var(--rojo);
+  color: var(--blanco);
+  border-radius: 999px;
+  font-size: 0.7rem;
+  padding: 2px 8px;
+  font-weight: 800;
+}
+.principal-medico {
+  flex: 1;
+  padding: 22px;
+  max-width: 1400px;
+  min-height: 100vh;
+  /* Fondo con un toque de color muy suave — antes era gris plano y se
+     veía apagado (pedido de William 2026-07-20). Deliberadamente MUY
+     tenue (4-6% de opacidad): esta es una pantalla de trabajo con
+     datos clínicos, no una pantalla de marketing, así que no debe
+     competir con el contenido ni cansar la vista en uso prolongado. */
+  background:
+    radial-gradient(circle at 100% 0%, rgba(21, 101, 192, 0.06) 0%, transparent 40%),
+    radial-gradient(circle at 0% 100%, rgba(109, 74, 168, 0.05) 0%, transparent 35%);
+}
+.estado-conexion { font-size: 0.78rem; padding: 8px 12px; color: var(--gris-600); }
+.estado-conexion .punto { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--gris-300); margin-right: 6px; }
+.estado-conexion.en-linea .punto { background: #2ecc71; }
+
+/* ---------- Riel lateral de resumen ----------
+   Antes solo envolvía la vista de Alertas (de ahí el nombre viejo
+   .vista-alertas-con-riel); el 2026-07-20 se extendió a Citas,
+   Pacientes y Mensajes también (el mismo "lado derecho vacío" que
+   señaló William en esas 3 vistas), así que la clase se renombró a
+   .vista-con-riel para que el nombre no mienta. El riel vive UNA
+   sola vez en medico/app.html, fuera de las <section> de cada vista
+   (igual que en el mockup de Claude Design: el aside está fuera de
+   los sc-if), así no se repite el marcado 4 veces. Se oculta solo
+   al entrar al Expediente de un paciente (pantalla ya densa, no le
+   hace falta). */
+.vista-con-riel { display: flex; gap: 18px; align-items: flex-start; }
+.vista-con-riel .col-principal { flex: 1; min-width: 0; }
+.riel-lateral { width: 300px; flex-shrink: 0; display: flex; flex-direction: column; gap: 14px; }
+.riel-lateral.oculto { display: none; }
+.fila-resumen {
+  display: flex;
+  align-items: stretch;
+  padding: 14px 8px;
+}
+.fila-resumen .col-resumen {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 0 6px;
+}
+.fila-resumen .col-resumen .numero-resumen { font-size: 1.1rem; font-weight: 700; color: var(--azul-oscuro); line-height: 1.2; }
+.fila-resumen .col-resumen .etiqueta-resumen { font-size: 0.68rem; color: var(--gris-600); text-align: center; line-height: 1.3; }
+.fila-resumen .divisor-resumen { width: 1px; background: var(--gris-300); flex-shrink: 0; }
+.tarjeta-saludo { display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center; padding: 24px 20px; }
+.tarjeta-saludo .avatar-perfil {
+  width: 96px; height: 96px;
+  border-radius: 50%;
+  background: var(--azul-claro);
+  color: var(--azul-oscuro);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.7rem; font-weight: 700;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+.tarjeta-saludo .avatar-perfil img { width: 100%; height: 100%; object-fit: cover; }
+.tarjeta-saludo .texto-saludo { font-size: 0.97rem; font-weight: 600; }
+.tarjeta-saludo .fecha-saludo { font-size: 0.78rem; color: var(--gris-600); }
+.riel-lateral .tarjeta h3 { font-size: 0.85rem; font-weight: 600; }
+.lista-proximas-citas .item-cita-mini {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--gris-100);
+}
+.lista-proximas-citas .item-cita-mini:last-child { border-bottom: none; }
+.lista-proximas-citas .hora-cita { font-size: 0.85rem; font-weight: 800; color: var(--azul); flex-shrink: 0; }
+.lista-proximas-citas .titulo { font-size: 0.87rem; }
+.lista-proximas-citas .detalle { font-size: 0.76rem; }
+
+@media (max-width: 1000px) {
+  .vista-con-riel { flex-direction: column; }
+  .riel-lateral { width: 100%; flex-direction: row; flex-wrap: wrap; }
+  .riel-lateral > .tarjeta-saludo { flex: 1; min-width: 150px; }
+  .riel-lateral > .tarjeta { width: 100%; }
+}
+
+/* ---------- Panel médico en teléfono ----------
+   Añadido 2026-07-20 a pedido de William: el panel médico solo tenía
+   vista de escritorio (así se diseñó en Claude Design, un panel de
+   trabajo de consultorio), y la app de paciente solo tenía vista de
+   teléfono — cada una necesitaba también la otra vista. No existe un
+   mockup de Claude Design para "panel médico en celular" (no se pidió
+   ese diseño), así que esta adaptación es propia, pensada para ser
+   simple y no inventar una interfaz nueva: la barra lateral se
+   convierte en una barra superior fija de una sola fila, con scroll
+   horizontal si no caben los 4 accesos + marca + salir — un patrón
+   común en paneles de escritorio adaptados a móvil, sin ocultar
+   ninguna opción (nada se pierde, solo se reorganiza). */
+@media (max-width: 720px) {
+  .app-medico { flex-direction: column; }
+  .lateral-medico {
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    width: 100%;
+    height: auto;
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    gap: 4px;
+    padding: 8px 10px;
+    border-right: none;
+    border-bottom: 1px solid var(--gris-300);
+  }
+  .lateral-medico .marca { padding: 0 10px 0 2px; flex-shrink: 0; }
+  .lateral-medico .marca .marca-subtitulo { display: none; }
+  .lateral-medico button.nav-item { flex-shrink: 0; white-space: nowrap; }
+  .lateral-medico .abajo {
+    margin-top: 0;
+    margin-left: auto;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .lateral-medico .estado-conexion { display: none; }
+  .principal-medico { padding: 14px; }
+}
+
+/* ---------- Listas de elementos ---------- */
+.item-lista {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--gris-100);
+}
+.item-lista:last-child { border-bottom: none; }
+.item-lista .titulo { font-weight: 700; font-size: 0.95rem; }
+.item-lista .detalle { color: var(--gris-600); font-size: 0.83rem; margin-top: 2px; }
+
+/* ---------- Avatar con iniciales (Pacientes, Mensajes) ----------
+   Añadido 2026-07-20 siguiendo el mockup de Claude Design: filas de
+   persona con círculo de iniciales en vez de solo texto. */
+.avatar-inicial {
+  width: 38px; height: 38px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.72rem; font-weight: 800;
+  flex-shrink: 0;
+  background: var(--azul-claro);
+  color: var(--azul-oscuro);
+}
+.fila-persona {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 13px 0;
+  border-top: 1px solid var(--gris-100);
+}
+.fila-persona:first-child { border-top: none; }
+.fila-persona .info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.fila-persona .nombre { font-size: 0.92rem; font-weight: 700; }
+.fila-persona .detalle { font-size: 0.8rem; color: var(--gris-600); }
+
+/* ---------- Fila de cita (agenda del médico) ---------- */
+.fila-cita {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 0;
+  border-top: 1px solid var(--gris-100);
+}
+.fila-cita:first-child { border-top: none; }
+.fila-cita .hora-fecha { flex-shrink: 0; width: 62px; display: flex; flex-direction: column; gap: 1px; }
+.fila-cita .hora-fecha .hora { font-size: 0.88rem; font-weight: 800; color: var(--azul-oscuro); }
+.fila-cita .hora-fecha .fecha { font-size: 0.72rem; color: var(--gris-600); }
+.fila-cita .info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.fila-cita .nombre { font-size: 0.92rem; font-weight: 600; }
+.fila-cita .detalle { font-size: 0.8rem; color: var(--gris-600); }
+.fila-cita .acciones { flex-shrink: 0; display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+
+/* ---------- Chat (mensajería y Diagnóstico Flash) ---------- */
+.zona-chat {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 235px);
+  min-height: 320px;
+}
+.mensajes-chat {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px;
+  background: var(--blanco);
+  border-radius: var(--radio);
+  box-shadow: var(--sombra);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.burbuja {
+  max-width: 82%;
+  padding: 10px 13px;
+  border-radius: 14px;
+  font-size: 0.92rem;
+  line-height: 1.4;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+.burbuja-mia { align-self: flex-end; background: var(--azul); color: var(--blanco); border-bottom-right-radius: 4px; }
+.burbuja-otro { align-self: flex-start; background: var(--gris-100); border-bottom-left-radius: 4px; }
+.burbuja-sistema {
+  align-self: center;
+  background: var(--ambar-claro);
+  color: var(--ambar);
+  font-size: 0.8rem;
+  text-align: center;
+  max-width: 95%;
+}
+.burbuja .hora { display: block; font-size: 0.68rem; opacity: 0.7; margin-top: 3px; }
+.entrada-chat { display: flex; gap: 8px; margin-top: 10px; }
+.entrada-chat input {
+  flex: 1;
+  padding: 12px;
+  border: 1.5px solid var(--gris-300);
+  border-radius: 10px;
+  font-size: 1rem;
+  font-family: var(--fuente);
+}
+.entrada-chat input:focus { outline: none; border-color: var(--azul); }
+
+/* ---------- Cabecera de conversación (avatar + nombre) ---------- */
+.cabecera-chat { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+.cabecera-chat .info { flex: 1; min-width: 0; }
+.cabecera-chat .info h2 { font-size: 1.02rem; }
+
+/* ---------- Datos del expediente ---------- */
+.rejilla-datos {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 10px;
+}
+.dato-clave { background: var(--gris-100); border-radius: 10px; padding: 10px 12px; }
+.dato-clave .etiqueta { font-size: 0.7rem; font-weight: 700; color: var(--gris-600); text-transform: uppercase; letter-spacing: 0.4px; }
+.dato-clave .valor { font-size: 1.02rem; font-weight: 700; margin-top: 2px; }
+
+.foto-evidencia { max-width: 130px; border-radius: 8px; display: block; margin-top: 6px; cursor: pointer; }
+
+/* ---------- Pestañas internas (sub-secciones del expediente) ---------- */
+.pestanas {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  margin-bottom: 12px;
+}
+.pestanas button {
+  border: 1.5px solid var(--gris-300);
+  background: var(--blanco);
+  border-radius: 999px;
+  padding: 7px 14px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  font-family: var(--fuente);
+  color: var(--gris-600);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.pestanas button.activo { background: var(--azul); border-color: var(--azul); color: var(--blanco); }
+
+/* ---------- Tablas simples ---------- */
+.tabla { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+.tabla th {
+  text-align: left;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--gris-600);
+  padding: 8px 8px;
+  border-bottom: 2px solid var(--gris-100);
+}
+.tabla td { padding: 9px 8px; border-bottom: 1px solid var(--gris-100); vertical-align: top; }
+
+/* ---------- Videollamada ---------- */
+.llamada-fondo {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 20, 17, 0.92);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.llamada-caja {
+  background: var(--blanco);
+  border-radius: var(--radio);
+  padding: 32px 28px;
+  text-align: center;
+  width: 90%;
+  max-width: 320px;
+}
+.llamada-avatar { font-size: 2.4rem; margin-bottom: 6px; }
+.llamada-caja h2 { margin-top: 4px; }
+.llamada-botones { display: flex; gap: 10px; margin-top: 20px; }
+.llamada-botones .boton { flex: 1; }
+
+.llamada-activa {
+  position: absolute;
+  inset: 0;
+  background: #000;
+}
+#video-remoto {
+  width: 100%; height: 100%;
+  object-fit: cover;
+}
+#video-local {
+  position: absolute;
+  bottom: 100px; right: 16px;
+  width: 110px; height: 150px;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 2px solid rgba(255,255,255,0.5);
+  background: #222;
+}
+.llamada-controles {
+  position: absolute;
+  bottom: 24px; left: 0; right: 0;
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+}
+.boton-control {
+  width: 54px; height: 54px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255,255,255,0.18);
+  color: var(--blanco);
+  font-size: 1.3rem;
+  cursor: pointer;
+}
+.boton-control.control-apagado { background: var(--rojo); }
+.boton-control.boton-colgar { background: var(--rojo); transform: rotate(135deg); }
+
+/* ---------- Vacíos y carga ---------- */
+.vacio {
+  text-align: center;
+  color: var(--gris-600);
+  padding: 26px 10px;
+  font-size: 0.9rem;
+}
+.vacio .icono { font-size: 1.9rem; display: block; margin-bottom: 6px; }
+
+/* ============================================================
+   Mejoras ABEP IV — Visor de foto, alertas críticas, buscador,
+   conversaciones con no leídos, edición de perfil y timer de llamada
+   ============================================================ */
+
+/* Banner de valor fuera de rango en Inicio del paciente */
+.banner-critico {
+  background: var(--rojo-claro);
+  border: 1.5px solid #f2b8b3;
+  border-left: 4px solid var(--rojo);
+  border-radius: var(--radio);
+  padding: 13px 15px;
+  margin-bottom: 12px;
+  color: var(--rojo);
+}
+.banner-critico strong { display: block; font-size: 0.95rem; margin-bottom: 3px; }
+.banner-critico p { font-size: 0.85rem; color: var(--gris-900); line-height: 1.4; }
+
+/* Medición crítica resaltada en Mi salud */
+.item-critico {
+  border-left: 3.5px solid var(--rojo);
+  padding-left: 10px;
+  background: #fff9f9;
+  border-radius: 6px;
+}
+
+/* Buscador de pacientes */
+.buscador-caja {
+  margin-top: 10px;
+  margin-bottom: 6px;
+}
+.buscador-caja input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1.5px solid var(--gris-300);
+  border-radius: 10px;
+  font-size: 0.95rem;
+  font-family: var(--fuente);
+  background: var(--gris-100);
+}
+.buscador-caja input:focus {
+  outline: none;
+  border-color: var(--azul);
+  background: var(--blanco);
+}
+
+/* Preview de imagen antes de subir evidencia */
+.preview-foto-caja {
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--gris-100);
+  padding: 8px 10px;
+  border-radius: 10px;
+}
+.preview-foto-caja img {
+  width: 64px;
+  height: 64px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid var(--gris-300);
+}
+
+/* Acciones rápidas en tarjetas de alerta */
+.acciones-alerta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+
+/* Badge de no leídos en lista de conversaciones */
+.badge-chat {
+  background: var(--rojo);
+  color: var(--blanco);
+  font-size: 0.72rem;
+  font-weight: 700;
+  border-radius: 999px;
+  padding: 2px 8px;
+  min-width: 22px;
+  text-align: center;
+}
+.fila-persona.tiene-no-leidos .nombre {
+  font-weight: 700;
+  color: var(--azul-oscuro);
+}
+.preview-msg {
+  font-size: 0.82rem;
+  color: var(--gris-600);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 240px;
+  display: block;
+}
+
+/* Botón eliminar en chips de alergias/antecedentes */
+.chip-con-x {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin: 2px;
+}
+.chip-con-x button {
+  background: none;
+  border: none;
+  color: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0 2px;
+  font-size: 0.85rem;
+  line-height: 1;
+}
+
+/* Modal visor de foto de evidencia (verificación clínica) */
+.visor-fondo {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 25, 42, 0.82);
+  z-index: 120;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+.visor-caja {
+  background: var(--blanco);
+  border-radius: var(--radio);
+  max-width: 560px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+  padding: 18px;
+}
+.visor-img {
+  width: 100%;
+  max-height: 58vh;
+  object-fit: contain;
+  border-radius: 8px;
+  background: #111827;
+  margin: 12px 0;
+}
+.visor-nota {
+  background: var(--azul-claro);
+  color: var(--azul-oscuro);
+  padding: 9px 12px;
+  border-radius: 8px;
+  font-size: 0.83rem;
+}
+
+/* Cabecera superpuesta de videollamada activa (nombre + cronómetro) */
+.llamada-barra-sup {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  right: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(15, 25, 42, 0.58);
+  color: var(--blanco);
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  z-index: 5;
+}

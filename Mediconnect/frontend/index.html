@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MediConnect — Iniciar sesión</title>
+  <meta name="theme-color" content="#1565c0">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/estilos.css">
+</head>
+<body>
+  <div class="pantalla-acceso">
+    <div class="caja-acceso">
+      <div class="logo-acceso">
+        <img src="/img/logo-completo.jpg" alt="MediConnect" class="logo-completo">
+        <p>Telemedicina para el control de tus condiciones crónicas</p>
+      </div>
+
+      <div class="tarjeta">
+        <div class="selector-rol">
+          <button type="button" id="btn-rol-paciente" class="activo">Soy paciente</button>
+          <button type="button" id="btn-rol-medico">Soy médico</button>
+        </div>
+
+        <div id="zona-aviso"></div>
+
+        <form id="form-login">
+          <div class="campo" id="campo-cedula">
+            <label for="cedula">Cédula</label>
+            <input type="text" id="cedula" autocomplete="username" placeholder="Ej: 12345678">
+          </div>
+          <div class="campo oculto" id="campo-email">
+            <label for="email">Correo electrónico</label>
+            <input type="email" id="email" autocomplete="username" placeholder="doctor@ejemplo.com">
+          </div>
+          <div class="campo">
+            <label for="password">Contraseña</label>
+            <input type="password" id="password" autocomplete="current-password" placeholder="Tu contraseña">
+          </div>
+          <button type="submit" class="boton boton-bloque" id="btn-entrar">Entrar</button>
+        </form>
+
+        <p class="texto-suave texto-centrado mt-2">
+          ¿No tienes cuenta?
+          <a href="/registro-paciente.html" id="enlace-registro">Regístrate como paciente</a>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/api.js"></script>
+  <script>
+    // Si ya hay sesión válida, no tiene sentido ver el login otra vez.
+    if (API.token() && API.rol() === 'paciente') window.location.href = '/paciente/app.html';
+    if (API.token() && API.rol() === 'medico') window.location.href = '/medico/app.html';
+
+    let rolActual = 'paciente';
+
+    const btnPaciente = document.getElementById('btn-rol-paciente');
+    const btnMedico = document.getElementById('btn-rol-medico');
+    const campoCedula = document.getElementById('campo-cedula');
+    const campoEmail = document.getElementById('campo-email');
+    const enlaceRegistro = document.getElementById('enlace-registro');
+    const zonaAviso = document.getElementById('zona-aviso');
+
+    function cambiarRol(rol) {
+      rolActual = rol;
+      limpiarAviso(zonaAviso);
+      btnPaciente.classList.toggle('activo', rol === 'paciente');
+      btnMedico.classList.toggle('activo', rol === 'medico');
+      campoCedula.classList.toggle('oculto', rol !== 'paciente');
+      campoEmail.classList.toggle('oculto', rol !== 'medico');
+      if (rol === 'paciente') {
+        enlaceRegistro.textContent = 'Regístrate como paciente';
+        enlaceRegistro.href = '/registro-paciente.html';
+      } else {
+        enlaceRegistro.textContent = 'Solicita tu cuenta de médico';
+        enlaceRegistro.href = '/registro-medico.html';
+      }
+    }
+
+    btnPaciente.addEventListener('click', () => cambiarRol('paciente'));
+    btnMedico.addEventListener('click', () => cambiarRol('medico'));
+
+    document.getElementById('form-login').addEventListener('submit', async (evento) => {
+      evento.preventDefault();
+      limpiarAviso(zonaAviso);
+
+      const password = document.getElementById('password').value;
+      const btn = document.getElementById('btn-entrar');
+      btn.disabled = true;
+
+      try {
+        if (rolActual === 'paciente') {
+          const cedula = document.getElementById('cedula').value.trim();
+          const datos = await API.pedir('/auth/login-paciente', {
+            metodo: 'POST',
+            cuerpo: { cedula, password }
+          });
+          API.guardarSesion(datos.token, 'paciente', datos.paciente);
+          window.location.href = '/paciente/app.html';
+        } else {
+          const email = document.getElementById('email').value.trim();
+          const datos = await API.pedir('/auth/login-medico', {
+            metodo: 'POST',
+            cuerpo: { email, password }
+          });
+          API.guardarSesion(datos.token, 'medico', datos.medico);
+          window.location.href = '/medico/app.html';
+        }
+      } catch (error) {
+        mostrarAviso(zonaAviso, 'error', error.message);
+      } finally {
+        btn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>

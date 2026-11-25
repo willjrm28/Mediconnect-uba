@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MediConnect — Solicitud de cuenta médica</title>
+  <meta name="theme-color" content="#1565c0">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/estilos.css">
+</head>
+<body>
+  <div class="pantalla-acceso">
+    <div class="caja-acceso">
+      <div class="logo-acceso">
+        <h1>Únete como médico</h1>
+        <p>Tu solicitud será revisada antes de habilitar tu cuenta</p>
+      </div>
+
+      <div class="tarjeta">
+        <div id="zona-aviso"></div>
+
+        <form id="form-registro">
+          <div class="campo">
+            <label for="nombre">Nombre completo *</label>
+            <input type="text" id="nombre" required>
+          </div>
+          <div class="campo">
+            <label for="email">Correo electrónico *</label>
+            <input type="email" id="email" required>
+          </div>
+          <div class="campo">
+            <label for="password">Contraseña *</label>
+            <input type="password" id="password" required minlength="6">
+          </div>
+          <div class="campos-dobles">
+            <div class="campo">
+              <label for="id_especialidad">Especialidad *</label>
+              <select id="id_especialidad" required>
+                <option value="">Cargando…</option>
+              </select>
+            </div>
+            <div class="campo">
+              <label for="telefono">Teléfono</label>
+              <input type="tel" id="telefono">
+            </div>
+          </div>
+          <div class="campo">
+            <label for="titulo">Título profesional *</label>
+            <input type="text" id="titulo" placeholder="Ej: Médico Cirujano, UCV, 2015" required>
+          </div>
+          <div class="campo">
+            <label for="referencias">Referencias profesionales *</label>
+            <textarea id="referencias" rows="3" required
+              placeholder="Colegio de médicos, institución donde trabajas, colegas de referencia…"></textarea>
+          </div>
+
+          <button type="submit" class="boton boton-bloque" id="btn-registrar">Enviar solicitud</button>
+        </form>
+
+        <p class="texto-suave texto-centrado mt-2">
+          ¿Ya tienes cuenta aprobada? <a href="/index.html">Inicia sesión</a>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/api.js"></script>
+  <script>
+    // Las especialidades vienen de la base de datos, no se escriben a mano.
+    (async () => {
+      const select = document.getElementById('id_especialidad');
+      try {
+        const especialidades = await API.pedir('/especialidades');
+        select.innerHTML = '<option value="">Selecciona…</option>' +
+          especialidades.map((e) => `<option value="${e.id}">${escaparHtml(e.nombre)}</option>`).join('');
+      } catch (error) {
+        select.innerHTML = '<option value="">No se pudieron cargar</option>';
+      }
+    })();
+
+    document.getElementById('form-registro').addEventListener('submit', async (evento) => {
+      evento.preventDefault();
+      const zonaAviso = document.getElementById('zona-aviso');
+      limpiarAviso(zonaAviso);
+
+      const btn = document.getElementById('btn-registrar');
+      btn.disabled = true;
+
+      try {
+        const datos = await API.pedir('/auth/registro-medico', {
+          metodo: 'POST',
+          cuerpo: {
+            nombre: document.getElementById('nombre').value.trim(),
+            email: document.getElementById('email').value.trim(),
+            password: document.getElementById('password').value,
+            id_especialidad: document.getElementById('id_especialidad').value,
+            telefono: document.getElementById('telefono').value.trim() || null,
+            titulo: document.getElementById('titulo').value.trim(),
+            referencias: document.getElementById('referencias').value.trim()
+          }
+        });
+
+        document.getElementById('form-registro').classList.add('oculto');
+        mostrarAviso(zonaAviso, 'exito',
+          datos.mensaje || 'Solicitud enviada. Te avisaremos cuando sea aprobada.');
+      } catch (error) {
+        mostrarAviso(zonaAviso, 'error', error.message);
+        btn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>

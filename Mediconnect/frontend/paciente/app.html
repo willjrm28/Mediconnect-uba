@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#1565c0">
+  <link rel="manifest" href="/manifest.json">
+  <title>MediConnect — Mi salud</title>
+  <link rel="stylesheet" href="/css/estilos.css">
+</head>
+<body>
+<div class="app-paciente">
+
+  <header class="barra-superior">
+    <div class="fila">
+      <span class="avatar-perfil-topbar" id="avatar-topbar">--</span>
+      <div class="textos-topbar">
+        <span class="etiqueta-topbar">MediConnect</span>
+        <h1 id="saludo">Hola</h1>
+      </div>
+    </div>
+    <div class="fila">
+      <button class="boton-salir" id="btn-perfil" title="Mi perfil" aria-label="Mi perfil">
+        <svg width="18" height="18" viewBox="0 0 256 256" fill="currentColor"><path d="M230.92,212c-15.23-26.33-38.7-45.21-66.09-54.16a72,72,0,1,0-73.66,0C63.78,166.78,40.31,185.66,25.08,212a8,8,0,1,0,13.85,8c18.84-32.56,52.14-52,89.07-52s70.23,19.44,89.07,52a8,8,0,1,0,13.85-8ZM72,96a56,56,0,1,1,56,56A56.06,56.06,0,0,1,72,96Z"></path></svg>
+      </button>
+      <button class="boton-salir" id="btn-salir">Salir</button>
+    </div>
+  </header>
+
+  <div class="cuerpo-paciente">
+    <main class="contenido">
+
+      <!-- ============ INICIO ============ -->
+      <section id="seccion-inicio">
+        <div id="inicio-banner-critico"></div>
+
+        <div class="tarjeta">
+          <div class="fila-separada">
+            <h2>Próximas citas</h2>
+            <button class="boton boton-chico boton-secundario" data-ir="citas">Ver todas</button>
+          </div>
+          <div id="inicio-citas" class="mt-1"><div class="vacio">Cargando…</div></div>
+        </div>
+
+        <div class="tarjeta">
+          <h2>Mis medicamentos</h2>
+          <p class="texto-suave">Marca cada toma para llevar tu registro.</p>
+          <div id="inicio-medicamentos" class="mt-1"><div class="vacio">Cargando…</div></div>
+        </div>
+
+        <div class="tarjeta">
+          <h2>Indicaciones de mi médico</h2>
+          <div id="inicio-indicaciones" class="mt-1"><div class="vacio">Cargando…</div></div>
+        </div>
+      </section>
+
+      <!-- ============ SALUD (signos vitales + laboratorio) ============ -->
+      <section id="seccion-salud" class="oculto">
+        <div class="pestanas">
+          <button class="activo" data-subseccion="signos">Signos vitales</button>
+          <button data-subseccion="laboratorio">Laboratorio</button>
+        </div>
+
+        <div id="subseccion-signos">
+          <div class="tarjeta">
+            <h2>Registrar medición</h2>
+            <p class="texto-suave">La foto del aparato (tensiómetro, oxímetro, glucómetro o termómetro) es obligatoria como respaldo clínico.</p>
+            <div id="aviso-signos" class="mt-1"></div>
+            <form id="form-signos" class="mt-1">
+              <div class="campos-dobles">
+                <div class="campo">
+                  <label for="sv-presion">Presión arterial *</label>
+                  <input type="text" id="sv-presion" placeholder="120/80" required>
+                </div>
+                <div class="campo">
+                  <label for="sv-fc">Frecuencia cardíaca *</label>
+                  <input type="number" id="sv-fc" placeholder="72" min="20" max="250" required>
+                </div>
+              </div>
+              <div class="campos-dobles">
+                <div class="campo">
+                  <label for="sv-spo2">SpO2 (%) *</label>
+                  <input type="number" id="sv-spo2" placeholder="98" min="50" max="100" required>
+                </div>
+                <div class="campo">
+                  <label for="sv-temp">Temperatura (°C) *</label>
+                  <input type="number" id="sv-temp" placeholder="36.5" step="0.1" min="30" max="45" required>
+                </div>
+              </div>
+              <div class="campo">
+                <label for="sv-glicemia">Glicemia (mg/dL, opcional)</label>
+                <input type="number" id="sv-glicemia" placeholder="Ej: 105" step="0.1" min="20" max="700">
+              </div>
+              <div class="campo">
+                <label for="sv-foto">Foto del aparato *</label>
+                <input type="file" id="sv-foto" accept="image/*" capture="environment" required>
+                <div id="sv-foto-preview" class="oculto"></div>
+              </div>
+              <button type="submit" class="boton boton-bloque" id="btn-guardar-signos">Guardar medición</button>
+            </form>
+          </div>
+
+          <div class="tarjeta">
+            <h2>Historial de mediciones</h2>
+            <div id="lista-signos" class="mt-1"><div class="vacio">Cargando…</div></div>
+          </div>
+        </div>
+
+        <div id="subseccion-laboratorio" class="oculto">
+          <div class="tarjeta">
+            <h2>Exámenes pendientes</h2>
+            <p class="texto-suave">Tu médico ordenó estos exámenes. Cuando tengas el resultado, súbelo aquí con una foto del informe.</p>
+            <div id="lista-lab-pendientes" class="mt-1"><div class="vacio">Cargando…</div></div>
+          </div>
+          <div class="tarjeta">
+            <h2>Resultados entregados</h2>
+            <div id="lista-lab-completados" class="mt-1"><div class="vacio">Cargando…</div></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ DIAGNÓSTICO FLASH ============ -->
+      <section id="seccion-flash" class="oculto">
+        <div class="fila-separada" style="margin-bottom:10px">
+          <h2>Diagnóstico Flash ⚡</h2>
+          <button class="boton boton-chico boton-secundario" id="btn-nuevo-flash">Nueva consulta</button>
+        </div>
+        <div id="aviso-flash"></div>
+        <div class="zona-chat">
+          <div class="mensajes-chat" id="chat-flash">
+            <div class="vacio">
+              <span class="icono">⚡</span>
+              Describe tus síntomas y te orientamos en minutos.<br>
+              <button class="boton boton-chico mt-2" id="btn-iniciar-flash">Comenzar</button>
+            </div>
+          </div>
+          <form class="entrada-chat" id="form-flash">
+            <input type="text" id="entrada-flash" placeholder="Escribe tus síntomas…" autocomplete="off" disabled>
+            <button type="submit" class="boton" id="btn-enviar-flash" disabled>Enviar</button>
+          </form>
+        </div>
+      </section>
+
+      <!-- ============ CITAS ============ -->
+      <section id="seccion-citas" class="oculto">
+        <div class="tarjeta">
+          <h2>Agendar nueva cita</h2>
+          <div id="aviso-citas"></div>
+          <form id="form-cita" class="mt-1">
+            <div class="campo">
+              <label for="cita-medico">Médico *</label>
+              <select id="cita-medico" required><option value="">Cargando…</option></select>
+            </div>
+            <div class="campos-dobles">
+              <div class="campo">
+                <label for="cita-fecha">Fecha *</label>
+                <input type="date" id="cita-fecha" required>
+              </div>
+              <div class="campo">
+                <label for="cita-hora">Hora *</label>
+                <input type="time" id="cita-hora" required>
+              </div>
+            </div>
+            <div class="campo">
+              <label for="cita-tipo">Motivo de la consulta *</label>
+              <input type="text" id="cita-tipo" placeholder="Ej: Control de presión arterial" required>
+            </div>
+            <button type="submit" class="boton boton-bloque">Solicitar cita</button>
+          </form>
+          <p class="texto-suave mt-1">Tu cita quedará "Pendiente" hasta que el médico la confirme.</p>
+        </div>
+
+        <div class="tarjeta">
+          <h2>Mis citas</h2>
+          <div id="lista-citas" class="mt-1"><div class="vacio">Cargando…</div></div>
+        </div>
+      </section>
+
+      <!-- ============ MENSAJES ============ -->
+      <section id="seccion-mensajes" class="oculto">
+        <div id="mensajes-lista-vista">
+          <div class="tarjeta">
+            <h2>Mis conversaciones</h2>
+            <p class="texto-suave">Escríbele a cualquier médico aprobado de la plataforma.</p>
+            <div id="lista-medicos-chat" class="mt-1"><div class="vacio">Cargando…</div></div>
+          </div>
+        </div>
+
+        <div id="mensajes-chat-vista" class="oculto">
+          <div class="fila-separada" style="margin-bottom:10px">
+            <button class="boton boton-chico boton-secundario" id="btn-volver-mensajes">← Volver</button>
+            <div class="cabecera-chat">
+              <span class="avatar-inicial" id="chat-avatar">--</span>
+              <div class="info"><h2 id="chat-titulo">Chat</h2></div>
+            </div>
+            <button class="boton boton-chico" id="btn-llamar">📹 Llamar</button>
+          </div>
+          <div class="zona-chat">
+            <div class="mensajes-chat" id="chat-mensajes"></div>
+            <form class="entrada-chat" id="form-mensaje">
+              <input type="text" id="entrada-mensaje" placeholder="Escribe un mensaje…" autocomplete="off">
+              <button type="submit" class="boton">Enviar</button>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ PERFIL ============ -->
+      <section id="seccion-perfil" class="oculto">
+        <div class="tarjeta">
+          <div class="fila-separada">
+            <h2>Mis datos</h2>
+            <button type="button" class="boton boton-chico boton-secundario" id="btn-editar-perfil">Editar</button>
+          </div>
+          <div id="aviso-perfil" class="mt-1"></div>
+          <div id="perfil-datos" class="rejilla-datos mt-1"></div>
+
+          <form id="form-editar-perfil" class="oculto mt-2">
+            <div class="campos-dobles">
+              <div class="campo">
+                <label for="edit-telefono">Teléfono</label>
+                <input type="tel" id="edit-telefono" required>
+              </div>
+              <div class="campo">
+                <label for="edit-edad">Edad</label>
+                <input type="number" id="edit-edad" min="1" max="120" required>
+              </div>
+            </div>
+            <div class="campos-dobles">
+              <div class="campo">
+                <label for="edit-peso">Peso (kg)</label>
+                <input type="number" id="edit-peso" step="0.1" min="1" max="500" required>
+              </div>
+              <div class="campo">
+                <label for="edit-altura">Altura (cm)</label>
+                <input type="number" id="edit-altura" step="0.1" min="30" max="260" required>
+              </div>
+            </div>
+            <div class="campos-dobles">
+              <div class="campo">
+                <label for="edit-fumador">¿Fumas?</label>
+                <select id="edit-fumador" required>
+                  <option>No</option><option>Si</option>
+                </select>
+              </div>
+              <div class="campo">
+                <label for="edit-alcohol">Alcohol</label>
+                <select id="edit-alcohol" required>
+                  <option>No</option><option>Ocasional</option><option>Frecuente</option>
+                </select>
+              </div>
+            </div>
+            <div class="campo">
+              <label for="edit-actividad">Actividad física</label>
+              <select id="edit-actividad" required>
+                <option>Sedentario</option><option>Moderado</option><option>Activo</option>
+              </select>
+            </div>
+            <div class="fila">
+              <button type="submit" class="boton boton-chico">Guardar cambios</button>
+              <button type="button" class="boton boton-chico boton-secundario" id="btn-cancelar-editar-perfil">Cancelar</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="tarjeta">
+          <h2>Alergias</h2>
+          <div id="lista-alergias" class="mt-1"><div class="vacio">Cargando…</div></div>
+          <form id="form-alergia" class="fila mt-2">
+            <input type="text" id="nueva-alergia" placeholder="Ej: Penicilina" class="crece"
+              style="padding:10px;border:1.5px solid var(--gris-300);border-radius:10px;font-size:1rem">
+            <button type="submit" class="boton boton-chico">Agregar</button>
+          </form>
+        </div>
+
+        <div class="tarjeta">
+          <h2>Antecedentes familiares</h2>
+          <div id="lista-antecedentes" class="mt-1"><div class="vacio">Cargando…</div></div>
+          <form id="form-antecedente" class="fila mt-2">
+            <input type="text" id="nuevo-antecedente" placeholder="Ej: Diabetes (madre)" class="crece"
+              style="padding:10px;border:1.5px solid var(--gris-300);border-radius:10px;font-size:1rem">
+            <button type="submit" class="boton boton-chico">Agregar</button>
+          </form>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Riel lateral — solo visible en escritorio -->
+    <aside class="riel-lateral riel-paciente">
+      <div class="tarjeta tarjeta-saludo">
+        <span class="avatar-perfil"><span id="riel-pac-iniciales">--</span></span>
+        <div>
+          <div class="texto-saludo" id="riel-pac-saludo">Hola</div>
+          <div class="fecha-saludo" id="riel-pac-fecha"></div>
+        </div>
+      </div>
+      <div class="tarjeta fila-resumen">
+        <div class="col-resumen">
+          <span class="numero-resumen" id="riel-pac-citas">—</span>
+          <span class="etiqueta-resumen">citas próximas</span>
+        </div>
+        <div class="divisor-resumen"></div>
+        <div class="col-resumen">
+          <span class="numero-resumen" id="riel-pac-medicamentos">—</span>
+          <span class="etiqueta-resumen">medicamentos activos</span>
+        </div>
+      </div>
+      <div class="tarjeta">
+        <h3>Próximas citas</h3>
+        <div id="riel-pac-lista-citas" class="lista-proximas-citas mt-1"><div class="vacio">Cargando…</div></div>
+      </div>
+    </aside>
+  </div>
+
+  <!-- Navegación inferior -->
+  <nav class="nav-inferior">
+    <button data-seccion="inicio" class="activo">
+      <svg width="19" height="19" viewBox="0 0 256 256" fill="currentColor"><path d="M218.83,103.77l-80-75.48a1.14,1.14,0,0,1-.11-.11,16,16,0,0,0-21.53,0l-.11.11L37.17,103.77A16,16,0,0,0,32,115.55V208a16,16,0,0,0,16,16H96a16,16,0,0,0,16-16V160h32v48a16,16,0,0,0,16,16h48a16,16,0,0,0,16-16V115.55A16,16,0,0,0,218.83,103.77ZM208,208H160V160a16,16,0,0,0-16-16H112a16,16,0,0,0-16,16v48H48V115.55l.11-.1L128,40l79.9,75.43.11.1Z"></path></svg>
+      Inicio
+    </button>
+    <button data-seccion="salud">
+      <svg width="19" height="19" viewBox="0 0 256 256" fill="currentColor"><path d="M216,120h-40.58l-13.33-40a8,8,0,0,0-15.11-.11L128,138.66,108.94,79.51a8,8,0,0,0-15.06-.51L80.61,120H40a8,8,0,0,0,0,16H86.18a8,8,0,0,0,7.54-5.33l7.78-21.79,19.44,60.31a8,8,0,0,0,15.05.36l19.2-59.88,7.79,23.38a8,8,0,0,0,7.59,5.47H216a8,8,0,0,0,0-16Z"></path></svg>
+      Salud
+    </button>
+    <button data-seccion="flash">
+      <svg width="19" height="19" viewBox="0 0 256 256" fill="currentColor"><path d="M215.79,118.17a8,8,0,0,0-5-5.66L153.18,90.9l14.66-73.33a8,8,0,0,0-13.69-7l-112,120a8,8,0,0,0,3,13l57.63,21.61L88.16,238.43a8,8,0,0,0,13.69,7l112-120A8,8,0,0,0,215.79,118.17Z"></path></svg>
+      Flash
+    </button>
+    <button data-seccion="citas">
+      <svg width="19" height="19" viewBox="0 0 256 256" fill="currentColor"><path d="M208,32H184V24a8,8,0,0,0-16,0v8H88V24a8,8,0,0,0-16,0v8H48A16,16,0,0,0,32,48V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V48A16,16,0,0,0,208,32ZM72,48v8a8,8,0,0,0,16,0V48h80v8a8,8,0,0,0,16,0V48h24V80H48V48ZM208,208H48V96H208V208Z"></path></svg>
+      Citas
+    </button>
+    <button data-seccion="mensajes" id="nav-mensajes">
+      <svg width="19" height="19" viewBox="0 0 256 256" fill="currentColor"><path d="M216,48H40A16,16,0,0,0,24,64V224a15.85,15.85,0,0,0,9.24,14.5A16.13,16.13,0,0,0,40,240a15.89,15.89,0,0,0,10.25-3.78l.09-.07L83,208H216a16,16,0,0,0,16-16V64A16,16,0,0,0,216,48ZM40,224h0ZM216,192H80a8,8,0,0,0-5.23,1.95L40,224V64H216Z"></path></svg>
+      Mensajes
+    </button>
+  </nav>
+
+</div>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/paciente.js"></script>
+  <script src="/js/llamada.js"></script>
+</body>
+</html>

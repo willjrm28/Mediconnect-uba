@@ -1,0 +1,22 @@
+{
+  "name": "MediConnect — Telemedicina",
+  "short_name": "MediConnect",
+  "description": "Plataforma de telemedicina y seguimiento continuo de pacientes crónicos.",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "background_color": "#f1f4f8",
+  "theme_color": "#1565c0",
+  "lang": "es",
+  "icons": [
+    {
+      "src": "/img/logo-icono.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/img/logo-icono.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
